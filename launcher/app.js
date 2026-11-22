@@ -11,6 +11,14 @@
   var timer, saved = [], openMenu = null, videoOn = false, clockTimer = null, picking = false, pickerBack = null;
   var subBack = null, slideTimer = null;
   var videoReturn = null, preference = 'auto';
+  // Clear obsolete preview / duplicate dock apps from older sessions
+  try {
+    if (localStorage.getItem('cyt-v5-appsbtn') !== '1') {
+      localStorage.removeItem('cyt-dock-apps');
+      localStorage.removeItem('cyt-order');
+      localStorage.setItem('cyt-v5-appsbtn', '1');
+    }
+  } catch (e) {}
   try { preference = localStorage.getItem('cyt-wallpaper') || 'auto'; } catch (error) { preference = 'auto'; }
   try { saved = JSON.parse(localStorage.getItem('cyt-order') || '[]'); } catch (error) { saved = []; }
   // Dock apps: the set pinned from the library on this TV, else the built-in shortcuts.
@@ -29,8 +37,11 @@
     clearTimeout(timer); timer = setTimeout(function () { message.hidden = true; }, 6000);
   }
   function openApp(id) { core.launch(tv, id, function () {}, announce); }
-  // Tell the background service the launcher is leaving on purpose before it gets hidden.
-  function openShortcut(id) { core.tellService(tv, config.serviceId, 'opened-app', function () { openApp(id); }, id); }
+  // Launch the app instantly and notify the background service asynchronously.
+  function openShortcut(id) {
+    openApp(id);
+    core.tellService(tv, config.serviceId, 'opened-app', function () {}, id);
+  }
   function hideVideo(done) {
     var finish = function () { if (done) done(); };
     if (!videoOn || !tv || !tv.tvwindow) { videoOn = false; finish(); return; }
@@ -40,9 +51,13 @@
   function returnHome() {
     hideVideo(function () {
       // Pause the background service first so it does not pull the launcher straight back.
-      if (config.samsungHome) { core.tellService(tv, config.serviceId, 'pause', function () { openApp(config.samsungHome); }); return; }
+      if (config.samsungHome) {
+        openApp(config.samsungHome);
+        core.tellService(tv, config.serviceId, 'pause', function () {});
+        return;
+      }
       try { tv.application.getCurrentApplication().exit(); }
-      catch (error) { announce('Bản xem trước · Thoát launcher'); }
+      catch (error) { announce('Modo Demonstração · Sair do launcher'); }
     });
   }
 
@@ -56,9 +71,8 @@
     document.querySelector('.today').classList.toggle('night', hello.period === 'evening' || hello.period === 'night');
     if (shownDay === now.toDateString()) return;
     shownDay = now.toDateString();
-    var lunar = calendar.toLunar(now.getDate(), now.getMonth() + 1, now.getFullYear());
-    $('date').textContent = now.toLocaleDateString('vi-VN', {weekday: 'long', day: 'numeric', month: 'long'}) +
-      '\u00a0\u00a0|\u00a0\u00a0Âm lịch: ' + lunar.day + '/' + lunar.month;
+    var d = now.toLocaleDateString('pt-BR', {weekday: 'long', day: 'numeric', month: 'long'});
+    $('date').textContent = d.charAt(0).toUpperCase() + d.slice(1);
     // Show the nearest events, dropping the farthest until the line fits.
     var events = $('events'), line = events.parentNode, items = calendar.countdowns(now, config.events, 3);
     for (var count = items.length; count >= 1; count -= 1) {
@@ -89,7 +103,7 @@
 
   // ---- Control center ----
   // One panel that slides in from the right (#menu). Its rows are built in buildControls(); About is a sub-view of it.
-  var MAIN_HINT = 'OK để chọn  ·  Back để đóng';
+  var MAIN_HINT = 'OK para selecionar  ·  Voltar para fechar';
   function row(label, value, onActivate, options) {
     var button = document.createElement('button'); button.className = 'row'; button.setAttribute('role', 'menuitem');
     var left = document.createElement('span');
@@ -147,11 +161,11 @@
     $('menu-title').textContent = title; $('menu-hint').textContent = MAIN_HINT;
     build(); setMenuOpen(name); focusFirstRow();
   }
-  // A view inside the panel, such as Giới thiệu. The panel rows wait aside; Back puts them back on the row that opened it.
+  // A view inside the panel, such as Sobre o Sistema.
   function openSubView(title, build) {
     var from = document.activeElement, rows = document.createDocumentFragment(), mainTitle = $('menu-title').textContent;
     while (menuItems.firstChild) rows.appendChild(menuItems.firstChild);
-    $('menu-title').textContent = title; $('menu-hint').textContent = 'Back để quay lại'; menu.classList.add('sub');
+    $('menu-title').textContent = title; $('menu-hint').textContent = 'Voltar para retornar'; menu.classList.add('sub');
     build(); menuItems.scrollTop = 0; enterRows(); focusFirstRow();
     subBack = function () {
       menuItems.textContent = ''; menuItems.appendChild(rows); menu.classList.remove('sub');
@@ -170,16 +184,16 @@
         tv.tvwindow.show(function () {
           videoOn = true; setMenuOpen(null);
           document.documentElement.classList.add('video'); document.body.classList.add('video');
-        }, function () { announce('Không hiển thị được ' + choice.title + '.'); }, MAIN_RECT, 'MAIN');
-      } catch (error) { announce('TV chưa cho phép hiển thị nguồn này.'); }
+        }, function () { announce('Não foi possível exibir ' + choice.title + '.'); }, MAIN_RECT, 'MAIN');
+      } catch (error) { announce('A TV não permitiu exibir esta fonte.'); }
     };
   }
   function selectSource(choice, returnTo) {
     live.switching();
     videoReturn = returnTo || null;
-    if (!tv || !tv.tvwindow) { announce('Bản xem trước · ' + choice.title); return; }
-    try { tv.tvwindow.setSource(choice.source, enterVideo(choice), function () { announce('Không chuyển được sang ' + choice.title + '.'); }); }
-    catch (error) { announce('TV chưa cho phép chuyển nguồn này.'); }
+    if (!tv || !tv.tvwindow) { announce('Modo Demonstração · ' + choice.title); return; }
+    try { tv.tvwindow.setSource(choice.source, enterVideo(choice), function () { announce('Não foi possível alternar para ' + choice.title + '.'); }); }
+    catch (error) { announce('A TV não permitiu alternar esta fonte.'); }
   }
   function leaveVideo() {
     hideVideo(function () {
@@ -189,54 +203,55 @@
     });
   }
   function buildInput(choices) {
-    if (!choices.length) { row('Chưa có nguồn nào được chọn', '', null); return; }
+    if (!choices.length) { row('Nenhuma fonte selecionada', '', null); return; }
     choices.forEach(function (choice) {
-      row(choice.title, choice.name || (choice.connected ? 'Đang kết nối' : 'Không có tín hiệu'),
+      row(choice.title, choice.name || (choice.connected ? 'Conectado' : 'Sem sinal'),
         function () { selectSource(choice); }, {dot: choice.connected});
     });
   }
   // Read the sources and Wi-Fi first, so the panel opens complete and focus lands once.
   function openControls() {
     readSources(function (value) {
-      readWifi(function () { showMenu('controls', 'Điều khiển', function () { buildControls(value); }); });
+      readWifi(function () { showMenu('controls', 'Central de Controle', function () { buildControls(value); }); });
     });
   }
-  // Every row of the control center, top to bottom. Add a row with row(label, value, onActivate, options) where it belongs.
+  // Every row of the control center, top to bottom.
   function buildControls(value) {
-    heading('Nguồn vào');
+    heading('Entradas de Vídeo');
     buildInput(core.inputChoices(value, inputsConfig));
     divider();
     var current = volume();
-    var volumeRow = row('Âm lượng', current === null ? 'Không điều khiển được' : '‹  ' + current + '  ›', null, {adjust: 'volume'});
+    var volumeRow = row('Volume', current === null ? 'Não disponível' : '‹  ' + current + '  ›', null, {adjust: 'volume'});
     volumeRow.button.removeAttribute('aria-disabled');
     if (current === null) volumeRow.button.setAttribute('aria-disabled', 'true');
-    var muteRow = row('Tắt tiếng', muted() ? 'Bật' : 'Tắt', function () {
-      try { audio().setMute(!muted()); muteRow.value.textContent = muted() ? 'Bật' : 'Tắt'; }
-      catch (error) { announce('Không điều khiển được âm thanh.'); }
+    var muteRow = row('Mudo', muted() ? 'Ligado' : 'Desligado', function () {
+      try { audio().setMute(!muted()); muteRow.value.textContent = muted() ? 'Ligado' : 'Desligado'; }
+      catch (error) { announce('Não foi possível controlar o áudio.'); }
     });
     divider();
-    row('Wi-Fi', wifi.on ? wifi.ssid + '  ·  ' + wifi.percent + '%' : 'Đang tắt hoặc chưa kết nối', null, {info: true});
+    row('Wi-Fi', wifi.on ? wifi.ssid + '  ·  ' + wifi.percent + '%' : 'Desconectado', null, {info: true});
     divider();
     if ((config.wallpapers || []).length) {
-      row('Hình nền', wallpaperName(preference) + '  ›', function () { setMenuOpen(null); openPicker(); });
+      row('Papel de Parede', wallpaperName(preference) + '  ›', function () { setMenuOpen(null); openPicker(); });
     }
     if (ambient.nightAllowed()) {
-      var nightRow = row('Chế độ đêm', ambient.nightLabel(), function () { nightRow.value.textContent = ambient.toggleNight(); });
+      var nightRow = row('Modo Noturno', ambient.nightLabel(), function () { nightRow.value.textContent = ambient.toggleNight(); });
     }
-    row('Sắp xếp ứng dụng', '›', function () { setMenuOpen(null); openPanel(); });
+    row('Organizar Aplicativos', '›', function () { setMenuOpen(null); openPanel(); });
     divider();
-    row('Giới thiệu', '›', openAbout);
-    row('Thiết lập lại', '›', function () { setMenuOpen(null); openSetup(); });
+    row('Sobre o Sistema', '›', openAbout);
+    row('Configurações da TV (Samsung)', '↗', function () { core.launch(tv, 'org.tizen.menu'); });
+    row('Configuração Inicial', '›', function () { setMenuOpen(null); openSetup(); });
     row('Samsung Home', '↗', returnHome);
   }
-  // Giới thiệu: read-only facts. TV values come from systeminfo; version and service mode from the built page config.
+  // Sobre o Sistema: read-only facts.
   function openAbout() {
     controls.readAbout(tv, function (system) {
       if (openMenu !== 'controls' || subBack) return; // the panel closed while the TV answered
       var apps = tiles.filter(function (tile) { return tile.kind !== 'input'; }).length;
       system.version = config.version; system.serviceMode = config.serviceMode;
       system.dockApps = apps; system.dockInputs = tiles.length - apps;
-      openSubView('Giới thiệu', function () {
+      openSubView('Sobre o Sistema', function () {
         controls.aboutRows(system).forEach(function (line) { row(line[0], line[1], null, {info: true}); });
         note(controls.NOTE);
       });
@@ -247,7 +262,7 @@
     if (current === null) return;
     var next = core.adjustVolume(current, key, 2);
     try { audio().setVolume(next); target.querySelector('.value').textContent = '‹  ' + next + '  ›'; }
-    catch (error) { announce('Không chỉnh được âm lượng.'); }
+    catch (error) { announce('Não foi possível ajustar o volume.'); }
   }
 
   // ---- Apps ----
@@ -258,6 +273,8 @@
     if (value.indexOf('nuvio') >= 0) return ['nuvio', 'N', 'NUVIO'];
     if (value.indexOf('youtube') >= 0) return ['youtube', '▶', 'YouTube'];
     if (value.indexOf('netflix') >= 0) return ['netflix', 'N', 'NETFLIX'];
+    if (value.indexOf('globo') >= 0) return ['globoplay', 'G', 'GloboPlay'];
+    if (value.indexOf('hbo') >= 0 || value.indexOf('max') >= 0) return ['hbo', 'M', 'Max'];
     if (value.indexOf('galaxy') >= 0 || value.indexOf('fim+') >= 0) return ['galaxyplay', 'G', 'GALAXY PLAY'];
     if (value.indexOf('tv360') >= 0 || value.indexOf('tv 360') >= 0) return ['tv360', '360', 'TV360'];
     if (value.indexOf('multiscreen') >= 0 || value.indexOf('mutilscreen') >= 0 || value.indexOf('multi screen') >= 0 || value.indexOf('app launcher') >= 0) return ['multiscreen', '⧉', 'MULTISCREEN'];
@@ -281,7 +298,7 @@
   // An input tile: device glyph, the device name and a quiet "HDMI 4" badge whose dot shows the signal.
   function drawInput(tile, button) {
     var style = core.deviceStyle(tile.name);
-    var state = tile.connected === true ? ', đang kết nối' : tile.connected === false ? ', không có tín hiệu' : '';
+    var state = tile.connected === true ? ', conectado' : tile.connected === false ? ', sem sinal' : '';
     button.className = 'app-tile input-tile ' + style + (tile.connected === false ? ' idle' : '');
     button.setAttribute('aria-label', tile.name + ', ' + tile.title + state);
     button.textContent = '';
@@ -309,18 +326,34 @@
   function readInputs() {
     if (tiles.some(function (tile) { return tile.kind === 'input'; })) readSources(refreshInputs);
   }
-  // Read the sources again on OK: the TV's source object is required, and the device may have just woken.
+  // Read the sources again on OK.
   function openInputTile(tile, button) {
     readSources(function (value) {
       refreshInputs(value);
       if (tile.choice) { selectSource(tile.choice, button); return; }
-      announce(tv ? 'TV chưa báo nguồn ' + tile.title + '. Thử lại trong Điều khiển › Nguồn vào.' : 'Bản xem trước · ' + tile.name + ' (' + tile.title + ')');
+      announce(tv ? 'A TV não detectou a fonte ' + tile.title + '. Tente em Controle › Entradas de Vídeo.' : 'Modo Demonstração · ' + tile.name + ' (' + tile.title + ')');
     });
+  }
+  function brandIcon(app) {
+    if (app && app.icon) return app.icon;
+    var name = (app && app.name ? app.name : '').toLowerCase();
+    var id = (app && app.id ? app.id : '').toLowerCase();
+    if (name.indexOf('youtube') >= 0 || id.indexOf('youtube') >= 0) return 'icons/youtube.svg';
+    if (name.indexOf('netflix') >= 0 || id.indexOf('netflix') >= 0) return 'icons/netflix.svg';
+    if (name.indexOf('prime') >= 0 || id.indexOf('prime') >= 0) return 'icons/prime.svg';
+    if (name.indexOf('disney') >= 0 || id.indexOf('disney') >= 0) return 'icons/disney.svg';
+    if (name.indexOf('spotify') >= 0 || id.indexOf('spotify') >= 0) return 'icons/spotify.svg';
+    if (name.indexOf('stremio') >= 0 || id.indexOf('stremio') >= 0) return 'icons/stremio.svg';
+    if (name.indexOf('globo') >= 0 || id.indexOf('globoplay') >= 0) return 'icons/globoplay.svg';
+    if (name.indexOf('hbo') >= 0 || name.indexOf('max') >= 0 || id.indexOf('beamctvdev') >= 0) return 'icons/hbo.svg';
+    if (name.indexOf('samsung') >= 0 || id.indexOf('csfs') >= 0) return 'icons/samsung.svg';
+    if (name.indexOf('config') >= 0 || id.indexOf('settings') >= 0) return 'icons/settings.svg';
+    return null;
   }
   function render() {
     dock.textContent = '';
-    var dockTiles = tiles.slice(0, 6);
-    dock.setAttribute('data-cols', String(core.dockColumns(dockTiles.length)));
+    var dockTiles = tiles.slice(0, core.DOCK_MAX || 12);
+    dock.setAttribute('data-cols', String(core.dockColumns(dockTiles.length + 1)));
     dockTiles.forEach(function (app) {
       if (app.kind === 'input') {
         var source = document.createElement('button');
@@ -334,21 +367,35 @@
       var identity = brand(app.name), button = document.createElement('button');
       button.className = 'app-tile ' + identity[0];
       button.setAttribute('aria-label', app.name);
+      var iconSrc = brandIcon(app);
+      if (iconSrc) {
+        var icon = document.createElement('img'); icon.className = 'icon'; icon.alt = '';
+        icon.addEventListener('error', function () {
+          if (icon.parentNode) icon.parentNode.removeChild(icon);
+          button.classList.remove('has-icon');
+        });
+        button.classList.add('has-icon'); button.appendChild(icon); icon.src = iconSrc;
+      }
       var symbol = document.createElement('span'); symbol.className = 'symbol'; symbol.textContent = identity[1];
       var label = document.createElement('span'); label.className = 'tile-label'; label.textContent = identity[2];
       button.appendChild(symbol); button.appendChild(label);
-      button.addEventListener('click', function () { openShortcut(app.id); });
+      button.addEventListener('click', function () {
+        if (app.id === 'cyt.settings') {
+          openControls();
+          return;
+        }
+        openShortcut(app.id);
+      });
       dock.appendChild(button);
     });
-    if (dockTiles.length < 6) {
-      var all = document.createElement('button'); all.id = 'btn-library'; all.className = 'app-tile library-tile';
-      all.setAttribute('aria-label', 'Tất cả ứng dụng');
-      var allLabel = document.createElement('span'); allLabel.className = 'tile-label'; allLabel.textContent = 'Ứng dụng';
-      all.appendChild(glyph('library')); all.appendChild(allLabel);
-      all.addEventListener('click', openLibrary);
-      dock.appendChild(all);
-    }
-    if (!tiles.length) announce('Dock chưa có ứng dụng. Chọn ô Ứng dụng để ghim.');
+    // ALWAYS append the "Apps" library tile!
+    var all = document.createElement('button'); all.id = 'btn-library'; all.className = 'app-tile library-tile';
+    all.setAttribute('aria-label', 'Todos os Aplicativos');
+    var allLabel = document.createElement('span'); allLabel.className = 'tile-label'; allLabel.textContent = 'Apps';
+    all.appendChild(glyph('library')); all.appendChild(allLabel);
+    all.addEventListener('click', openLibrary);
+    dock.appendChild(all);
+    if (!tiles.length) announce('Nenhum app na barra. Selecione Apps para fixar.');
   }
 
   // ---- App library ----
@@ -356,7 +403,7 @@
   var LIBRARY_COLS = 6;
   function saveDock() {
     try { localStorage.setItem('cyt-dock-apps', JSON.stringify(dockList)); }
-    catch (error) { announce('Không lưu được dock. Thay đổi chỉ có hiệu lực trong phiên này.'); }
+    catch (error) { announce('Não foi possível salvar a barra. Alterações válidas apenas para esta sessão.'); }
   }
   // Keep the saved order and the input tiles; newly pinned apps join at the end.
   function rebuildDock() {
@@ -370,28 +417,29 @@
   }
   function isPinned(id) { return dockList.some(function (app) { return app.id === id; }); }
   function libraryHint() {
-    $('library-edit').textContent = editing ? 'Xong' : 'Sửa dock';
-    $('library-hint').textContent = editing ? 'OK để ghim hoặc bỏ ghim khỏi dock  ·  Back khi xong'
-      : 'OK để mở  ·  Sửa dock để chọn ứng dụng cho màn hình chính';
+    $('library-edit').textContent = editing ? 'Concluir' : 'Editar Barra';
+    $('library-hint').textContent = editing ? 'OK para fixar ou desafixar da barra  ·  Voltar ao terminar'
+      : 'OK para abrir  ·  Editar Barra para escolher os apps da tela inicial';
     library.classList.toggle('editing', editing);
   }
   function drawLibraryTile(app, button) {
     var on = isPinned(app.id);
     button.classList.toggle('pinned', on);
-    button.setAttribute('aria-label', app.name + (on ? ', đã ghim vào dock' : ''));
+    button.setAttribute('aria-label', app.name + (on ? ', fixado na barra' : ''));
     button.querySelector('.pin').textContent = on ? '✓' : '+';
   }
   function libraryTile(app) {
     var identity = brand(app.name), button = document.createElement('button');
     button.className = 'lib-tile ' + identity[0];
-    if (app.icon) {
+    var iconSrc = brandIcon(app);
+    if (iconSrc) {
       // An icon the TV refuses to show (CSP, missing file) falls back to the typographic tile.
       var icon = document.createElement('img'); icon.className = 'icon'; icon.alt = '';
       icon.addEventListener('error', function () {
         if (icon.parentNode) icon.parentNode.removeChild(icon);
         button.classList.remove('has-icon');
       });
-      button.classList.add('has-icon'); button.appendChild(icon); icon.src = app.icon;
+      button.classList.add('has-icon'); button.appendChild(icon); icon.src = iconSrc;
     }
     var symbol = document.createElement('span'); symbol.className = 'symbol'; symbol.textContent = identity[1];
     var name = document.createElement('span'); name.className = 'lib-name'; name.textContent = app.name;
@@ -405,7 +453,7 @@
   function activateLibrary(app, button) {
     if (!editing) { closeLibrary(); openShortcut(app.id); return; }
     var result = core.togglePin(dockList, app);
-    if (result.full) { announce('Dock đã đủ ' + core.DOCK_MAX + ' ứng dụng. Bỏ ghim một ứng dụng trước.'); return; }
+    if (result.full) { announce('Barra cheia (' + core.DOCK_MAX + ' apps). Remova um app antes.'); return; }
     dockList = result.list; saveDock(); rebuildDock(); drawLibraryTile(app, button);
   }
   function fillLibrary(apps) {
@@ -414,7 +462,7 @@
     $('library-count').textContent = apps.length ? String(apps.length) : '';
     if (!apps.length) {
       var empty = document.createElement('p'); empty.className = 'library-empty';
-      empty.textContent = 'TV chưa trả về ứng dụng nào.'; libraryGrid.appendChild(empty); return;
+      empty.textContent = 'Nenhum aplicativo encontrado.'; libraryGrid.appendChild(empty); return;
     }
     apps.forEach(function (app) { libraryGrid.appendChild(libraryTile(app)); });
     libraryGrid.firstChild.focus();
@@ -424,7 +472,7 @@
     var exclude = {package: config.package, ids: [config.samsungHome, config.appId]};
     if (!tv || !tv.application || !tv.application.getAppsInfo) { done(core.libraryApps(config.previewLibrary || config.apps, exclude)); return; }
     function fallback() {
-      announce('TV không cho xem danh sách ứng dụng. Đang hiện các ứng dụng trên dock.');
+      announce('A TV não retornou a lista de apps. Exibindo apps da barra.');
       done(core.libraryApps(dockList, exclude));
     }
     try { tv.application.getAppsInfo(function (list) { done(core.libraryApps(list, exclude)); }, fallback); }
@@ -434,7 +482,7 @@
   function fillSelectedApps() {
     libraryGrid.textContent = '';
     $('library-count').textContent = tiles.length ? String(tiles.length) : '';
-    $('library-hint').textContent = 'OK để mở  ·  Sửa dock để chọn ứng dụng cho màn hình chính  ·  Back để quay lại';
+    $('library-hint').textContent = 'OK para abrir  ·  Editar Barra para organizar  ·  Voltar para retornar';
     tiles.forEach(function (app) {
       if (app.kind === 'input') {
         var source = document.createElement('button');
@@ -476,11 +524,11 @@
   function closePanel() { panel.hidden = true; home.hidden = false; centerButton.focus(); }
   function saveOrder() {
     try { localStorage.setItem('cyt-order', JSON.stringify(tiles.map(function (item) { return item.id; }))); }
-    catch (error) { announce('Không lưu được thứ tự. Thay đổi vẫn có hiệu lực trong phiên này.'); }
+    catch (error) { announce('Não foi possível salvar a ordem.'); }
   }
   // Move one app, save the new order, rebuild the dock and keep focus on the same action at its new place.
   function arrangeTo(index, to, action) {
-    if (index === to) { announce('Ứng dụng đã ở đầu hàng.'); return; }
+    if (index === to) { announce('O aplicativo já está no início.'); return; }
     tiles = core.moveItem(tiles, index, to);
     saveOrder(); render(); openPanel({index: to, action: action});
   }
@@ -494,13 +542,13 @@
       var actions = document.createElement('span'); actions.className = 'arrange-actions';
       // Two separate actions: one step up, or straight to the front of the row.
       var up = document.createElement('button');
-      up.textContent = '↑ Lên 1 bậc';
-      up.setAttribute('aria-label', 'Đưa ' + app.name + ' lên một bậc');
+      up.textContent = '↑ Subir 1';
+      up.setAttribute('aria-label', 'Mover ' + app.name + ' para cima');
       if (index === 0) up.setAttribute('aria-disabled', 'true');
       up.addEventListener('click', function () { arrangeTo(index, Math.max(0, index - 1), 'up'); });
       var top = document.createElement('button');
-      top.textContent = '⇧ Lên đầu';
-      top.setAttribute('aria-label', 'Đưa ' + app.name + ' lên đầu hàng');
+      top.textContent = '⇧ Para o Início';
+      top.setAttribute('aria-label', 'Mover ' + app.name + ' para o início');
       if (index === 0) top.setAttribute('aria-disabled', 'true');
       top.addEventListener('click', function () { arrangeTo(index, 0, 'top'); });
       actions.appendChild(up); actions.appendChild(top);
@@ -514,7 +562,7 @@
 
   // ---- Wiring ----
   centerButton.addEventListener('click', function () { if (openMenu) closeMenu(); else openControls(); });
-  centerButton.addEventListener('focus', function () { caption.textContent = 'Điều khiển'; });
+  centerButton.addEventListener('focus', function () { caption.textContent = 'Central de Controle'; });
   centerButton.addEventListener('blur', function () { caption.textContent = ''; });
   $('close-panel').addEventListener('click', closePanel);
 
@@ -551,7 +599,11 @@
       else if (libraryOpen) libraryBack();
       else if (!panel.hidden) closePanel();
       else if (openMenu) menuBack();
-      else returnHome();
+      else {
+        // Stay on home screen! Do not exit to Samsung interface!
+        if (dock.children.length) dock.children[0].focus();
+        else centerButton.focus();
+      }
       return;
     }
     if (videoOn) { event.preventDefault(); return; }
@@ -635,7 +687,7 @@
   }
   function wallpaperName(value) {
     var index = (config.wallpapers || []).indexOf(value);
-    return index >= 0 ? 'Hình ' + (index + 1) : 'Tự động';
+    return index >= 0 ? 'Imagem ' + (index + 1) : 'Automático';
   }
   function closePicker() {
     picking = false; $('picker').hidden = true; document.body.classList.remove('picking');
@@ -643,8 +695,8 @@
   }
   function openPicker() {
     var names = config.wallpapers || [], grid = $('picker-grid'), previous = shownWallpaper;
-    var options = [{value: 'auto', tag: 'Tự động mỗi ngày', url: core.wallpaperFor(names, new Date(), 'auto')}];
-    names.forEach(function (name, index) { options.push({value: name, tag: 'Hình ' + (index + 1), url: core.wallpaperFor(names, new Date(), name)}); });
+    var options = [{value: 'auto', tag: 'Automático Diário', url: core.wallpaperFor(names, new Date(), 'auto')}];
+    names.forEach(function (name, index) { options.push({value: name, tag: 'Imagem ' + (index + 1), url: core.wallpaperFor(names, new Date(), name)}); });
     var current = names.indexOf(preference) >= 0 ? preference : 'auto', focusTarget = null;
     grid.textContent = '';
     options.forEach(function (option) {
@@ -659,7 +711,7 @@
       button.addEventListener('click', function () {
         preference = option.value;
         try { localStorage.setItem('cyt-wallpaper', preference); }
-        catch (error) { announce('Không lưu được hình nền. Lựa chọn chỉ có hiệu lực trong phiên này.'); }
+        catch (error) { announce('Não foi possível salvar o papel de parede.'); }
         closePicker(); wallpaper();
       });
       grid.appendChild(button);
@@ -687,7 +739,7 @@
   }
   function tick() { clock(); readWifi(); wallpaper(); readInputs(); ambient.tick(new Date()); }
   clock(); readWifi(); wallpaper(); clockTimer = setInterval(tick, 30000);
-  if (!tv) $('mode').textContent = 'BẢN XEM TRƯỚC TRÊN MÁY TÍNH · KHÔNG THAY ĐỔI TV';
+  if (!tv) $('mode').textContent = 'MODO DEMONSTRAÇÃO · NENHUMA ALTERAÇÃO NA TV';
   core.tellService(tv, config.serviceId, 'resume', function () {});
   render(); readInputs(); (dock.firstChild || centerButton).focus();
   if (setup.shouldShow(config)) openSetup();

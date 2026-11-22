@@ -1,19 +1,40 @@
-// Desktop preview only. `cyt launcher-config` generates private shortcuts from a real TV inventory.
+// CleanYourTizen Configuration
 window.CYT_CONFIG = {
   name: 'CleanYourTizen', package: 'CyTizen001', appId: 'CyTizen001.Home',
+  serviceId: 'CyTizen001.Service', serviceMode: 'guard',
   artModeRequired: true, samsungHome: 'com.samsung.tv.csfs',
+  wallpapers: [
+    'crocodilo_rio.jpg',
+    'crocodilo_agua.jpg',
+    'leao.jpg',
+    'leopardo.jpg',
+    'onca.jpg',
+    'floresta.jpg',
+    'montanhas.jpg'
+  ],
   inputs: [{type: 'HDMI', number: 4, dock: true, label: 'PlayStation 4'}],
   apps: [
-    {id: 'preview.fpt', name: 'FPT Play'}, {id: 'preview.stremio', name: 'Stremio'},
-    {id: 'preview.nuvio', name: 'Nuvio TV'}, {id: 'preview.youtube', name: 'YouTube'},
-    {id: 'preview.netflix', name: 'Netflix'}
+    {id: '9Ur5IzDKqV.TizenYouTube', name: 'YouTube', icon: 'icons/youtube.svg'},
+    {id: 'org.tizen.netflix-app', name: 'Netflix', icon: 'icons/netflix.svg'},
+    {id: 'org.tizen.primevideo', name: 'Prime Video', icon: 'icons/prime.svg'},
+    {id: 'MCmYXNxgcu.DisneyPlus', name: 'Disney+', icon: 'icons/disney.svg'},
+    {id: '5b8c3eb16b.BeamCTVDev', name: 'HBO Max', icon: 'icons/hbo.svg'},
+    {id: 'org.tizen.globoplayaria', name: 'GloboPlay', icon: 'icons/globoplay.svg'},
+    {id: 'IkWsFHtOY9.Stremio', name: 'Stremio', icon: 'icons/stremio.svg'},
+    {id: 'rJeHak5zRg.Spotify', name: 'Spotify', icon: 'icons/spotify.svg'},
+    {id: 'cyt.settings', name: 'Configurações', icon: 'icons/settings.svg'}
   ],
-  // Preview-only stand-in for tizen.application.getAppsInfo(); `cyt build` writes its own config.js without it.
   previewLibrary: [
-    {id: 'preview.fpt', name: 'FPT Play'}, {id: 'preview.stremio', name: 'Stremio'}, {id: 'preview.nuvio', name: 'Nuvio TV'},
-    {id: 'preview.youtube', name: 'YouTube'}, {id: 'preview.netflix', name: 'Netflix'}, {id: 'preview.vieon', name: 'VieON'},
-    {id: 'preview.galaxy', name: 'Galaxy Play'}, {id: 'preview.spotify', name: 'Spotify'}, {id: 'preview.prime', name: 'Prime Video'},
-    {id: 'preview.browser', name: 'Internet'}, {id: 'preview.gallery', name: 'Gallery'}, {id: 'preview.smartthings', name: 'SmartThings'},
-    {id: 'preview.system', name: 'System Updater', show: false}, {id: 'com.samsung.tv.csfs', name: 'Samsung Home'}
+    {id: '9Ur5IzDKqV.TizenYouTube', name: 'YouTube', icon: 'icons/youtube.svg'},
+    {id: 'org.tizen.netflix-app', name: 'Netflix', icon: 'icons/netflix.svg'},
+    {id: 'org.tizen.primevideo', name: 'Prime Video', icon: 'icons/prime.svg'},
+    {id: 'MCmYXNxgcu.DisneyPlus', name: 'Disney+', icon: 'icons/disney.svg'},
+    {id: '5b8c3eb16b.BeamCTVDev', name: 'HBO Max', icon: 'icons/hbo.svg'},
+    {id: 'org.tizen.globoplayaria', name: 'GloboPlay', icon: 'icons/globoplay.svg'},
+    {id: 'IkWsFHtOY9.Stremio', name: 'Stremio', icon: 'icons/stremio.svg'},
+    {id: 'rJeHak5zRg.Spotify', name: 'Spotify', icon: 'icons/spotify.svg'},
+    {id: 'cyt.settings', name: 'Configurações', icon: 'icons/settings.svg'},
+    {id: 'com.samsung.tv.gallery', name: 'Galeria'},
+    {id: 'com.samsung.tv.csfs', name: 'Menu Samsung', icon: 'icons/samsung.svg'}
   ]
 };

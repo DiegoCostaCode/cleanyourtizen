@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="hboGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#5822B4"/>
+      <stop offset="100%" stop-color="#140827"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="22" fill="url(#hboGrad)"/>
+  <text x="50" y="52" fill="#FFFFFF" font-family="Arial,Helvetica,sans-serif" font-weight="900" font-size="28" letter-spacing="1" text-anchor="middle">MAX</text>
+  <text x="50" y="70" fill="#B590FF" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="13" letter-spacing="2" text-anchor="middle">HBO</text>
+</svg>

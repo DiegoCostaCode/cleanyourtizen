@@ -169,7 +169,7 @@ function probeProc(label) {
 module.exports.onStart = function () {
   if (settings.reportUrl) setTimeout(probeProc, 3000);
   watcher = watch.createWatcher({mode: settings.mode, launcherId: settings.launcherId, delayMs: settings.delayMs,
-    pauseMs: settings.pauseMs, cooldownMs: settings.cooldownMs, inspect: inspect, launch: launch, front: front,
+    pollMs: settings.pollMs || 250, pauseMs: settings.pauseMs, cooldownMs: settings.cooldownMs, inspect: inspect, launch: launch, front: front,
     report: function (event, detail) { report(event, detail); if (event === 'app-left' && settings.reportUrl) timeline(event); },
     setTimer: setTimeout, clearTimer: clearTimeout});
   report('start', {mode: settings.mode, node: process.version});

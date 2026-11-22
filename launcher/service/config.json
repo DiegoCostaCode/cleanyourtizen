@@ -1,0 +1,10 @@
+{
+  "pollMs": 250,
+  "delayMs": 50,
+  "pauseMs": 600000,
+  "cooldownMs": 1000,
+  "mode": "guard",
+  "launcherId": "CyTizen001.Home",
+  "homeId": "com.samsung.tv.csfs",
+  "reportUrl": null
+}

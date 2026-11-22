@@ -211,7 +211,7 @@
       banner.textContent = '';
       var style = options.deviceStyle ? options.deviceStyle(tile.name) : 'console';
       if (options.glyph) banner.appendChild(options.glyph(style.indexOf('console') === 0 ? 'console' : 'device'));
-      var text = doc.createElement('span'); text.textContent = tile.name + ' đã sẵn sàng'; banner.appendChild(text);
+      var text = doc.createElement('span'); text.textContent = tile.name + ' está pronto'; banner.appendChild(text);
       banner.hidden = false;
       void banner.offsetWidth; // start the fade from the hidden state
       banner.classList.add('show');

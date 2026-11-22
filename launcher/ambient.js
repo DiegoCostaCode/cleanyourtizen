@@ -67,7 +67,7 @@
     if (range.from > range.to) return now >= range.from || now < range.to;
     return false;
   }
-  function nightLabel(preference) { return preference === 'off' ? 'Tắt' : 'Tự động'; }
+  function nightLabel(preference) { return preference === 'off' ? 'Desativado' : 'Automático'; }
 
   // ---- Adaptive contrast ----
   function linear(channel) {

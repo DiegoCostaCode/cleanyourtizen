@@ -222,9 +222,9 @@
 
   // Step 1
   function welcome() {
-    view.title.textContent = 'Chào mừng';
-    view.lead.textContent = 'Màn hình chính gọn gàng cho TV này. Chọn ứng dụng, thiết bị HDMI và lời chào trong một phút.';
-    var start = button('Bắt đầu', function () { show(2); }), skip = button('Bỏ qua', finish);
+    view.title.textContent = 'Bem-vindo';
+    view.lead.textContent = 'Uma tela inicial elegante e limpa para sua TV. Escolha os aplicativos, entradas HDMI e saudação em um minuto.';
+    var start = button('Começar', function () { show(2); }), skip = button('Pular', finish);
     view.actions.appendChild(start); view.actions.appendChild(skip);
     state.rows = [[start, skip]]; start.focus();
   }
@@ -236,12 +236,12 @@
   }
   function isSelected(id) { return state.selected.some(function (item) { return item.id === id; }); }
   function maxApps() { var core = state.options.core; return core && core.DOCK_MAX ? core.DOCK_MAX : DOCK_MAX; }
-  function countText() { return 'Đã chọn ' + state.selected.length + '/' + maxApps(); }
+  function countText() { return 'Selecionados ' + state.selected.length + '/' + maxApps(); }
   function drawApp(app, node) {
     var on = isSelected(app.id);
     node.classList.toggle('selected', on);
     node.setAttribute('aria-pressed', on ? 'true' : 'false');
-    node.setAttribute('aria-label', app.name + (on ? ', đã chọn' : ''));
+    node.setAttribute('aria-label', app.name + (on ? ', selecionado' : ''));
   }
   function appTile(app) {
     var identity = brandOf(app.name), node = element('button', 'lib-tile setup-app ' + identity[0]);
@@ -258,7 +258,7 @@
     var pin = element('span', 'pin', '✓'); pin.setAttribute('aria-hidden', 'true'); node.appendChild(pin);
     node.addEventListener('click', function () {
       var result = toggleSelection(state.selected, app, maxApps());
-      if (result.full) { say('Đã đủ ' + maxApps() + ' ứng dụng. Bỏ chọn một ứng dụng trước.'); return; }
+      if (result.full) { say('Limite de ' + maxApps() + ' apps atingido. Desmarque um app primeiro.'); return; }
       state.selected = result.list; drawApp(app, node); view.count.textContent = countText();
     });
     keepVisible(node); drawApp(app, node);
@@ -268,17 +268,17 @@
     var options = state.options, config = options.config || {}, tv = options.tv, core = options.core, called = false;
     var exclude = {package: config.package, ids: [config.samsungHome, config.appId]};
     function answer(list) { if (!called) { called = true; done(core.libraryApps(list, exclude)); } }
-    function refused() { if (tv) say('TV không cho xem danh sách ứng dụng. Đang hiện các ứng dụng mặc định.'); answer(config.previewLibrary || config.apps); }
+    function refused() { if (tv) say('A TV não retornou a lista de apps. Exibindo apps padrão.'); answer(config.previewLibrary || config.apps); }
     if (!tv || !tv.application || !tv.application.getAppsInfo) { refused(); return; }
     try { tv.application.getAppsInfo(answer, refused); } catch (error) { refused(); }
   }
   function apps() {
-    view.title.textContent = 'Ứng dụng trên màn hình chính';
-    view.lead.appendChild(document.createTextNode('OK để chọn hoặc bỏ chọn, tối đa ' + maxApps() + '. '));
+    view.title.textContent = 'Aplicativos na tela inicial';
+    view.lead.appendChild(document.createTextNode('OK para selecionar ou desmarcar, máximo de ' + maxApps() + '. '));
     view.count = element('span', 'setup-count', countText()); view.count.setAttribute('aria-live', 'polite');
     view.lead.appendChild(view.count);
-    var grid = element('div', 'setup-grid'), next = button('Tiếp tục', function () {
-      if (!write('cyt-dock-apps', JSON.stringify(orderSelection(state.apps || [], state.selected)))) say('Không lưu được lựa chọn trên TV này.');
+    var grid = element('div', 'setup-grid'), next = button('Continuar', function () {
+      if (!write('cyt-dock-apps', JSON.stringify(orderSelection(state.apps || [], state.selected)))) say('Não foi possível salvar a seleção nesta TV.');
       show(3);
     });
     view.body.appendChild(grid); view.actions.appendChild(next);
@@ -287,7 +287,7 @@
     function fill(list) {
       if (!state || state.token !== token) return;
       state.apps = list;
-      if (!list.length) { grid.appendChild(element('p', 'setup-empty', 'TV chưa trả về ứng dụng nào.')); return; }
+      if (!list.length) { grid.appendChild(element('p', 'setup-empty', 'Nenhum aplicativo encontrado.')); return; }
       var tiles = list.map(appTile);
       tiles.forEach(function (tile) { grid.appendChild(tile); });
       state.rows = chunk(tiles, COLS).concat([[next]]); tiles[0].focus();
@@ -301,15 +301,15 @@
     node.setAttribute('aria-pressed', source.dock ? 'true' : 'false');
   }
   function sourceRow(source) {
-    var node = element('button', 'setup-source'), signal = source.connected === true ? 'Đang kết nối'
-      : source.connected === false ? 'Không có tín hiệu' : '';
+    var node = element('button', 'setup-source'), signal = source.connected === true ? 'Conectado'
+      : source.connected === false ? 'Sem sinal' : '';
     var named = source.label || source.name;
     node.appendChild(element('i', 'dot' + (source.connected === true ? ' on' : '')));
     node.appendChild(element('span', 'setup-name', named || source.title));
     node.appendChild(element('span', 'setup-port', named ? source.title + (signal ? '  ·  ' + signal : '') : signal));
-    node.appendChild(element('span', 'setup-hint', 'Hiện trên màn hình chính'));
+    node.appendChild(element('span', 'setup-hint', 'Mostrar na tela inicial'));
     var toggle = element('span', 'setup-switch'); toggle.appendChild(element('i')); node.appendChild(toggle);
-    node.setAttribute('aria-label', (source.label || source.name || source.title) + ', ' + source.title + ', hiện trên màn hình chính');
+    node.setAttribute('aria-label', (source.label || source.name || source.title) + ', ' + source.title + ', mostrar na tela inicial');
     node.addEventListener('click', function () { source.dock = !source.dock; drawSource(source, node); });
     keepVisible(node); drawSource(source, node);
     return node;
@@ -322,10 +322,10 @@
     catch (error) { answer(null); }
   }
   function inputs() {
-    view.title.textContent = 'Thiết bị HDMI';
-    view.lead.textContent = 'OK để hiện hoặc ẩn thiết bị trên màn hình chính. Nguồn vào vẫn có tất cả.';
-    var list = element('div', 'setup-list'), next = button('Tiếp tục', function () {
-      if (state.sources && !write('cyt-inputs', JSON.stringify(inputsFromSources(state.sources)))) say('Không lưu được lựa chọn trên TV này.');
+    view.title.textContent = 'Entradas HDMI';
+    view.lead.textContent = 'OK para exibir ou ocultar na tela inicial. Todas as fontes continuam disponíveis no menu.';
+    var list = element('div', 'setup-list'), next = button('Continuar', function () {
+      if (state.sources && !write('cyt-inputs', JSON.stringify(inputsFromSources(state.sources)))) say('Não foi possível salvar a seleção nesta TV.');
       show(4);
     });
     view.body.appendChild(list); view.actions.appendChild(next);
@@ -334,7 +334,7 @@
     function fill(sources) {
       if (!state || state.token !== token) return;
       state.sources = sources;
-      if (!sources.length) { list.appendChild(element('p', 'setup-empty', 'TV chưa báo nguồn HDMI nào.')); return; }
+      if (!sources.length) { list.appendChild(element('p', 'setup-empty', 'Nenhuma fonte HDMI detectada.')); return; }
       var rows = sources.map(sourceRow);
       rows.forEach(function (row) { list.appendChild(row); });
       state.rows = rows.map(function (row) { return [row]; }).concat([[next]]); rows[0].focus();
@@ -349,18 +349,18 @@
     return hello ? hello(new Date(), name).text : name;
   }
   function family() {
-    view.title.textContent = 'Tên gia đình';
-    view.lead.textContent = 'Thêm tên vào lời chào trên màn hình chính. Có thể để trống.';
+    view.title.textContent = 'Nome ou Família';
+    view.lead.textContent = 'Personalize a saudação na tela inicial. Pode deixar em branco se preferir.';
     var field = element('input', 'setup-field');
     field.type = 'text'; field.setAttribute('maxlength', String(GREETING_MAX)); field.setAttribute('autocomplete', 'off');
-    field.setAttribute('spellcheck', 'false'); field.setAttribute('aria-label', 'Tên gia đình');
-    field.placeholder = 'nhà An Bình'; field.value = state.name;
+    field.setAttribute('spellcheck', 'false'); field.setAttribute('aria-label', 'Nome ou Família');
+    field.placeholder = 'ex: Família Silva'; field.value = state.name;
     var preview = element('p', 'setup-preview', previewText(cleanGreeting(field.value)));
     field.addEventListener('input', function () { state.name = field.value; preview.textContent = previewText(cleanGreeting(field.value)); });
-    var done = button('Xong', function () {
-      if (!write('cyt-greeting', cleanGreeting(field.value))) say('Không lưu được tên trên TV này.');
+    var done = button('Concluir', function () {
+      if (!write('cyt-greeting', cleanGreeting(field.value))) say('Não foi possível salvar o nome nesta TV.');
       finish();
-    }), skip = button('Bỏ qua', finish);
+    }), skip = button('Pular', finish);
     view.body.appendChild(field); view.body.appendChild(preview);
     view.actions.appendChild(done); view.actions.appendChild(skip);
     view.field = field; view.done = done;

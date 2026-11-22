@@ -10,7 +10,7 @@ html.video,html.video body,body.video{background:transparent!important}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
 [hidden]{display:none!important}
 svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.glass{background:rgba(255,255,255,.16);-webkit-backdrop-filter:blur(30px) saturate(1.5);backdrop-filter:blur(30px) saturate(1.5);border:1px solid rgba(255,255,255,.24);box-shadow:0 18px 50px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.28)}
+.glass{background:rgba(18,24,38,.78);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.2);box-shadow:0 8px 30px rgba(0,0,0,.35)}
 main{position:relative;width:1920px;max-width:100%;height:1080px;margin:auto;padding:54px 94px}
 body.video main{display:none}
 
@@ -26,12 +26,14 @@ time{display:block;margin-top:6px;font-size:168px;line-height:1;font-weight:700;
 .greeting .heart{width:26px;height:26px;fill:#ff6fae;stroke:none}
 .events{display:flex;align-items:center;gap:12px;max-width:100%;margin:18px 0 0;font-size:22px;color:rgba(255,255,255,.9);text-shadow:0 2px 10px rgba(0,0,0,.45);white-space:nowrap;overflow:hidden}
 .events svg{width:28px;height:28px;flex:none}
-.dock{position:absolute;left:94px;right:94px;bottom:96px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:26px;transition:filter .25s,opacity .25s}
-.app-tile{position:relative;height:156px;border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 14px 28px rgba(0,0,0,.35)}
+.dock{position:absolute;left:70px;right:70px;bottom:75px;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:18px;padding:16px 20px;border-radius:30px;background:rgba(12,18,30,.6);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.16);box-shadow:0 16px 40px rgba(0,0,0,.45);-webkit-transform:translateZ(0);transform:translateZ(0);transition:opacity .2s}
+.app-tile{position:relative;height:148px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;contain:layout paint;-webkit-transform:translateZ(0);transform:translateZ(0)}
 .symbol{font-weight:700;font-size:46px;letter-spacing:-1.5px;line-height:1}
 .tile-label{font-weight:600;font-size:14px;letter-spacing:1.5px;margin-top:10px}
 .fpt{background:linear-gradient(145deg,#ff9c31,#e95306)}.fpt .symbol{font-style:italic}
 .stremio{background:linear-gradient(145deg,#844df2,#4d24ae)}.stremio .symbol{font-size:54px;font-style:italic}.stremio .tile-label{letter-spacing:0;font-weight:400}
+.globoplay{background:linear-gradient(145deg,#ff0040,#ff7700)}.globoplay .symbol{font-size:50px}
+.hbo{background:linear-gradient(145deg,#5822b4,#140827)}.hbo .symbol{font-size:46px;letter-spacing:1px}
 .nuvio{background:linear-gradient(135deg,#f2f1fa,#c2bfd8);color:#25263d}.nuvio .symbol{font-size:50px}
 .youtube{background:linear-gradient(145deg,#fa3942,#bd101e)}.youtube .symbol{font-size:44px}.youtube .tile-label{letter-spacing:0}
 .netflix{background:linear-gradient(135deg,#24262c,#101115)}.netflix .symbol{color:#e32536;font-size:52px}.netflix .tile-label{color:#e7e7ea;font-size:13px}
@@ -39,16 +41,19 @@ time{display:block;margin-top:6px;font-size:168px;line-height:1;font-weight:700;
 .tv360{background:linear-gradient(145deg,#ff1a40,#b80020);color:#fff}.tv360 .symbol{font-size:42px;font-weight:900;letter-spacing:-2px;font-style:italic;text-shadow:0 2px 8px rgba(0,0,0,.3)}.tv360 .tile-label{font-size:14px;letter-spacing:2px;font-weight:700}
 .multiscreen{background:linear-gradient(145deg,#0072de,#003b94);color:#fff}.multiscreen .symbol{font-size:42px;font-weight:700}.multiscreen .tile-label{font-size:13px;letter-spacing:1.5px;font-weight:700}
 .generic{background:linear-gradient(135deg,#344a64,#1d2839)}
-.dock[data-cols="6"]{grid-template-columns:repeat(6,minmax(0,1fr))}.dock[data-cols="7"]{grid-template-columns:repeat(7,minmax(0,1fr))}
+.app-tile.has-icon{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);box-shadow:0 4px 14px rgba(0,0,0,.22)}
+.app-tile.has-icon .symbol{display:none}
+.app-tile.has-icon .icon{width:76px;height:76px;object-fit:contain}
+.dock[data-cols="5"]{grid-template-columns:repeat(5,minmax(0,1fr))}.dock[data-cols="6"]{grid-template-columns:repeat(6,minmax(0,1fr))}.dock[data-cols="7"]{grid-template-columns:repeat(7,minmax(0,1fr))}.dock[data-cols="8"]{grid-template-columns:repeat(8,minmax(0,1fr))}.dock[data-cols="9"]{grid-template-columns:repeat(9,minmax(0,1fr))}.dock[data-cols="10"]{grid-template-columns:repeat(10,minmax(0,1fr))}
 .input-tile{background:linear-gradient(145deg,#3b4252,#1b1f28)}
 .input-tile.playstation{background:linear-gradient(145deg,#2f6fe4,#0c2f86)}
-.input-tile .glyph{width:56px;height:56px;stroke-width:1.5;transition:opacity .25s}
-.input-tile .tile-label{max-width:88%;margin-top:8px;font-size:15px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .25s}
+.input-tile .glyph{width:56px;height:56px;stroke-width:1.5;transition:opacity .15s}
+.input-tile .tile-label{max-width:88%;margin-top:8px;font-size:15px;letter-spacing:.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .15s}
 .input-tile .badge{position:absolute;top:10px;right:12px;display:flex;align-items:center;gap:6px;padding:4px 9px;border-radius:11px;font-size:12px;font-weight:600;letter-spacing:.5px;background:rgba(0,0,0,.24);color:rgba(255,255,255,.85)}
-.input-tile .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);transition:background .25s}
+.input-tile .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.4);transition:background .15s}
 .input-tile .dot.on{background:#46d17c;box-shadow:0 0 8px rgba(70,209,124,.8)}
 .input-tile.idle .glyph,.input-tile.idle .tile-label{opacity:.6}
-.library-tile{background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(30px) saturate(1.5);backdrop-filter:blur(30px) saturate(1.5);border:1px solid rgba(255,255,255,.22)}
+.library-tile{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);-webkit-transform:translateZ(0);transform:translateZ(0)}
 .library-tile .glyph{width:46px;height:46px;stroke-width:1.6}
 .library-tile .tile-label{margin-top:10px;font-size:15px;letter-spacing:.3px}
 
@@ -100,26 +105,20 @@ body.picking .dock,body.picking .clockblock,body.picking .today,body.picking .ch
 .picker-hint{margin:16px 4px 0;font-size:16px;color:rgba(255,255,255,.65)}
 /* ---- Focus motion, tvOS-like: the focused tile lifts on a light spring, casts a deep soft shadow and catches one
    sweep of light. No ring. Only transform and opacity animate, so the TV's compositor does the work. ---- */
-.app-tile,.lib-tile,.thumb{overflow:hidden;transition:transform .34s cubic-bezier(.3,1.35,.5,1),box-shadow .34s ease}
-.app-tile:focus,.lib-tile:focus,.thumb:focus{outline:none;z-index:1;-webkit-transform:translateY(-12px) scale(1.08);transform:translateY(-12px) scale(1.08);
-  box-shadow:0 36px 50px -16px rgba(0,0,0,.62),0 12px 22px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.38),inset 0 0 0 1px rgba(255,255,255,.16)}
-.app-tile::after,.lib-tile::after,.thumb::after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;border-radius:inherit;pointer-events:none;opacity:0;
-  background:linear-gradient(105deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.3) 48%,rgba(255,255,255,0) 66%);-webkit-transform:translateX(-110%);transform:translateX(-110%)}
-.app-tile:focus::after,.lib-tile:focus::after,.thumb:focus::after{-webkit-animation:sheen .85s ease-out .08s 1 forwards;animation:sheen .85s ease-out .08s 1 forwards}
-@-webkit-keyframes sheen{0%{opacity:0;-webkit-transform:translateX(-110%)}15%{opacity:1}80%{opacity:1}100%{opacity:0;-webkit-transform:translateX(110%)}}
-@keyframes sheen{0%{opacity:0;transform:translateX(-110%)}15%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateX(110%)}}
+.app-tile,.lib-tile,.thumb{overflow:hidden;transition:-webkit-transform .08s ease-out,transform .08s ease-out,background-color .08s ease-out;will-change:transform}
+.app-tile:focus,.lib-tile:focus,.thumb:focus{outline:none;z-index:2;-webkit-transform:scale(1.06) translateZ(0);transform:scale(1.06) translateZ(0);box-shadow:0 12px 26px rgba(0,0,0,.55),0 0 0 3px #fff;background-color:rgba(255,255,255,.24)}
+.app-tile::after,.lib-tile::after,.thumb::after{display:none}
+.app-tile:focus::after,.lib-tile:focus::after,.thumb:focus::after{display:none}
 /* At an edge the focus cannot move: the focused item leans toward the key and settles back. */
-.nudge-left{animation:flat-left .3s ease}.nudge-right{animation:flat-right .3s ease}.nudge-up{animation:flat-up .3s ease}.nudge-down{animation:flat-down .3s ease}
-@keyframes flat-left{40%{transform:translateX(-7px)}}@keyframes flat-right{40%{transform:translateX(7px)}}
-@keyframes flat-up{40%{transform:translateY(-6px)}}@keyframes flat-down{40%{transform:translateY(6px)}}
-.app-tile.nudge-left,.lib-tile.nudge-left,.thumb.nudge-left{animation:lift-left .3s ease}.app-tile.nudge-right,.lib-tile.nudge-right,.thumb.nudge-right{animation:lift-right .3s ease}
-.app-tile.nudge-up,.lib-tile.nudge-up,.thumb.nudge-up{animation:lift-up .3s ease}.app-tile.nudge-down,.lib-tile.nudge-down,.thumb.nudge-down{animation:lift-down .3s ease}
-@keyframes lift-left{40%{transform:translate(-10px,-12px) scale(1.08)}}@keyframes lift-right{40%{transform:translate(10px,-12px) scale(1.08)}}
-@keyframes lift-up{40%{transform:translateY(-20px) scale(1.08)}}@keyframes lift-down{40%{transform:translateY(-5px) scale(1.08)}}
-/* ---- Control center ----
-   One button at the top right, with a quiet Wi-Fi status beside it. OK slides a full-height glass panel in from the right;
-   the home behind it dims (a scrim, opacity only) and the dock blurs. The slide itself is transform-only. ---- */
-.control{position:absolute;top:56px;right:94px;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 24px;border-radius:44px;transition:opacity .25s}
+.nudge-left{animation:flat-left .2s ease}.nudge-right{animation:flat-right .2s ease}.nudge-up{animation:flat-up .2s ease}.nudge-down{animation:flat-down .2s ease}
+@keyframes flat-left{40%{transform:translateX(-5px)}}@keyframes flat-right{40%{transform:translateX(5px)}}
+@keyframes flat-up{40%{transform:translateY(-5px)}}@keyframes flat-down{40%{transform:translateY(5px)}}
+.app-tile.nudge-left,.lib-tile.nudge-left,.thumb.nudge-left{animation:lift-left .2s ease}.app-tile.nudge-right,.lib-tile.nudge-right,.thumb.nudge-right{animation:lift-right .2s ease}
+.app-tile.nudge-up,.lib-tile.nudge-up,.thumb.nudge-up{animation:lift-up .2s ease}.app-tile.nudge-down,.lib-tile.nudge-down,.thumb.nudge-down{animation:lift-down .2s ease}
+@keyframes lift-left{40%{transform:scale(1.06) translateX(-5px)}}@keyframes lift-right{40%{transform:scale(1.06) translateX(5px)}}
+@keyframes lift-up{40%{transform:scale(1.06) translateY(-5px)}}@keyframes lift-down{40%{transform:scale(1.06) translateY(5px)}}
+/* ---- Control center ---- */
+.control{position:absolute;top:56px;right:94px;display:flex;align-items:center;gap:10px;padding:8px 8px 8px 24px;border-radius:44px;transition:opacity .15s}
 .wifi-status{display:flex;color:rgba(255,255,255,.9)}
 .wifi-status svg{width:28px;height:28px}
 .wifi-status .arc,.wifi-status .dot{transition:opacity .2s}
@@ -128,15 +127,14 @@ body.picking .dock,body.picking .clockblock,body.picking .today,body.picking .ch
 .control button{width:84px;height:68px;border-radius:34px;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.9)}
 .control button:focus{outline:none;background:rgba(255,255,255,.92);color:#1b2233;box-shadow:0 4px 18px rgba(0,0,0,.3)}
 .control button.active{background:rgba(255,255,255,.28)}
-.caption{position:absolute;top:142px;right:62px;width:164px;margin:0;text-align:center;font-size:17px;color:rgba(255,255,255,.85);text-shadow:0 1px 8px rgba(0,0,0,.5);transition:opacity .25s}
-main::after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;background:rgba(4,8,20,.42);opacity:0;transition:opacity .4s ease}
+.caption{position:absolute;top:142px;right:62px;width:164px;margin:0;text-align:center;font-size:17px;color:rgba(255,255,255,.85);text-shadow:0 1px 8px rgba(0,0,0,.5);transition:opacity .15s}
+main::after{content:'';position:absolute;left:0;top:0;right:0;bottom:0;pointer-events:none;background:rgba(4,8,20,.42);opacity:0;transition:opacity .25s ease}
 body.menu-open main::after{opacity:1}
-body.menu-open .dock{-webkit-filter:blur(16px) brightness(.8);filter:blur(16px) brightness(.8)}
+body.menu-open .dock{opacity:.25;pointer-events:none}
 body.menu-open .clockblock,body.menu-open .today,body.menu-open .control,body.menu-open .caption{opacity:.35}
 .menu{position:fixed;top:0;right:0;bottom:0;width:520px;z-index:7;display:flex;flex-direction:column;padding:62px 26px 30px;
-  border-radius:40px 0 0 40px;border-right:0;background:rgba(22,26,40,.5);
-  -webkit-backdrop-filter:blur(40px) saturate(1.6);backdrop-filter:blur(40px) saturate(1.6);box-shadow:-24px 0 60px rgba(0,0,0,.32),inset 1px 0 0 rgba(255,255,255,.18);
-  -webkit-transform:translateX(112%);transform:translateX(112%);transition:transform .42s cubic-bezier(.22,.9,.24,1)}
+  border-radius:40px 0 0 40px;border-right:0;background:rgba(18,22,34,.88);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:-16px 0 40px rgba(0,0,0,.4);
+  -webkit-transform:translateX(112%);transform:translateX(112%);transition:transform .2s ease-out}
 .menu.open{-webkit-transform:none;transform:none}
 body.video .menu{display:none}
 .menu h2{margin:0 18px 22px;font-size:32px;font-weight:600}
@@ -222,7 +220,7 @@ body.previewing::before{-webkit-clip-path:var(--cyt-hole);clip-path:var(--cyt-ho
 body.previewing .night-veil{-webkit-clip-path:var(--cyt-hole);clip-path:var(--cyt-hole)}
 /* ---- First-run setup ---- */
 body.setup-open #home{visibility:hidden}
-.setup{position:fixed;left:0;top:0;width:100%;height:100%;z-index:8;display:flex;align-items:center;justify-content:center;padding:96px 120px 70px;background:rgba(8,12,28,.42);-webkit-backdrop-filter:blur(40px) saturate(1.4);backdrop-filter:blur(40px) saturate(1.4)}
+.setup{position:fixed;left:0;top:0;width:100%;height:100%;z-index:8;display:flex;align-items:center;justify-content:center;padding:96px 120px 70px;background:rgba(8,12,28,.92)}
 .setup-dots{position:absolute;top:58px;left:50%;display:flex;gap:14px;-webkit-transform:translateX(-50%);transform:translateX(-50%)}
 .setup-dots i{width:10px;height:10px;border-radius:50%;background:#fff;opacity:.3;transition:opacity .3s,transform .3s}
 .setup-dots i.on{opacity:1;-webkit-transform:scale(1.3);transform:scale(1.3)}

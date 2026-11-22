@@ -34,11 +34,11 @@
   }
   var APP_ID = /^[A-Za-z0-9_][A-Za-z0-9_.-]{0,159}$/;
   function launch(api, id, success, failure) {
-    if (!APP_ID.test(id || '')) { failure('Ứng dụng không hợp lệ.'); return; }
-    if (!api || !api.application) { failure('Bản xem trước · ' + id); return; }
+    if (!APP_ID.test(id || '')) { failure('Aplicativo inválido.'); return; }
+    if (!api || !api.application) { failure('Modo demonstração · ' + id); return; }
     try {
-      api.application.launch(id, success, function () { failure('Không mở được ứng dụng. Bạn vẫn có thể quay về Samsung Home.'); });
-    } catch (error) { failure('TV chưa cho phép mở ứng dụng này.'); }
+      api.application.launch(id, success, function () { failure('Não foi possível abrir o aplicativo.'); });
+    } catch (error) { failure('TV ainda não permitiu abrir este app.'); }
   }
   function inputChoices(value, allow) {
     var out = [], seen = Object.create(null), wanted = Array.isArray(allow) ? allow : [];
@@ -89,35 +89,59 @@
   }
   // One calm row: five columns by default, widening to seven before a second row starts.
   function dockColumns(count) {
-    return Math.max(5, Math.min(7, typeof count === 'number' ? Math.floor(count) : 0));
+    return Math.max(5, Math.min(10, typeof count === 'number' ? Math.floor(count) : 0));
   }
   // Installed apps for the library: shown in the TV's own app list, valid IDs, never the launcher itself or
   // the excluded IDs (Samsung Home), sorted by Vietnamese name. Icons are local file paths only.
   var ICON = /^(file:\/\/)?\/[A-Za-z0-9_\/.-]{1,200}\.(png|jpe?g|webp)$/i;
+  var DUMMY_BLACKLIST = [
+    'com.samsung.tv.cobalt-yt',
+    'com.samsung.tv.cobalt-yttv',
+    'com.samsung.tv.cobalt-ytkids',
+    'com.samsung.tv.cobalt-app-1566',
+    'com.samsung.tv.cobalt-app-3488',
+    'com.samsung.tv.cobalt-app-9878',
+    'org.tizen.primevideo-dummy',
+    'org.tizen.primevideo_companionapp',
+    'MCmYXNxgcu.DisneyPlusService',
+    'IkWsFHtOY9.StremioService',
+    'rJeHak5zRg.SpotifyService'
+  ];
   function libraryApps(list, exclude) {
-    var out = [], seen = Object.create(null), skip = exclude || {};
+    var out = [], seen = Object.create(null), seenName = Object.create(null), skip = exclude || {};
     var ids = Array.isArray(skip.ids) ? skip.ids : [];
     (Array.isArray(list) ? list : []).forEach(function (info) {
       if (!info || typeof info.id !== 'string' || !APP_ID.test(info.id) || info.show === false || seen[info.id]) return;
+      if (DUMMY_BLACKLIST.indexOf(info.id) >= 0) return;
       if (skip.package && info.id.split('.')[0] === skip.package) return;
       if (ids.indexOf(info.id) >= 0) return;
+      var clean = cleanName(info.name, 40) || info.id;
+      var norm = clean.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (norm && seenName[norm]) return;
+      if (norm) seenName[norm] = true;
       seen[info.id] = true;
       var icon = typeof info.iconPath === 'string' && ICON.test(info.iconPath) && info.iconPath.indexOf('..') < 0 ? info.iconPath : null;
-      out.push({id: info.id, name: cleanName(info.name, 40) || info.id, icon: icon});
+      out.push({id: info.id, name: clean, icon: icon});
     });
-    return out.sort(function (a, b) { return a.name.localeCompare(b.name, 'vi', {sensitivity: 'base'}); });
+    return out.sort(function (a, b) { return a.name.localeCompare(b.name, 'pt-BR', {sensitivity: 'base'}); });
   }
   var DOCK_MAX = 12;
   // The dock's apps: the list saved on this TV when it is a valid array (even empty), else the built-in defaults.
   function dockApps(defaults, stored) {
     if (!Array.isArray(stored)) return Array.isArray(defaults) ? defaults : [];
-    var out = [], seen = Object.create(null);
+    var out = [], seen = Object.create(null), seenName = Object.create(null);
     stored.forEach(function (app) {
       if (!app || typeof app.id !== 'string' || !APP_ID.test(app.id) || seen[app.id] || out.length >= DOCK_MAX) return;
+      if (DUMMY_BLACKLIST.indexOf(app.id) >= 0) return;
+      if (app.id.indexOf('preview.') === 0) return;
+      var clean = cleanName(app.name, 40) || app.id;
+      var norm = clean.toLowerCase().replace(/[^a-z0-9]/g, '');
+      if (norm && seenName[norm]) return;
+      if (norm) seenName[norm] = true;
       seen[app.id] = true;
-      out.push({id: app.id, name: cleanName(app.name, 40) || app.id});
+      out.push({id: app.id, name: clean});
     });
-    return out;
+    return out.length ? out : (Array.isArray(defaults) ? defaults : []);
   }
   // Pin or unpin one app; a full dock refuses new pins instead of dropping one silently.
   function togglePin(list, app) {

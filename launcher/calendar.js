@@ -85,18 +85,23 @@
     return jdToDate(newMoonDay(k + off) + day - 1);
   }
 
-  // Built-in Vietnamese and international days; private config may add more (birthdays).
+  // Built-in Brazilian and international days; private config may add more.
   var EVENTS = [
-    {name: 'Năm mới', month: 1, day: 1, withYear: true}, {name: 'Valentine', month: 2, day: 14},
-    {name: 'Ngày 8/3', month: 3, day: 8}, {name: 'Ngày 30/4', month: 4, day: 30},
-    {name: 'Ngày 1/5', month: 5, day: 1}, {name: 'Tết Thiếu nhi', month: 6, day: 1},
-    {name: 'Quốc khánh', month: 9, day: 2}, {name: 'Ngày Phụ nữ VN', month: 10, day: 20},
-    {name: 'Halloween', month: 10, day: 31}, {name: 'Ngày Nhà giáo', month: 11, day: 20},
-    {name: 'Giáng sinh', month: 12, day: 25},
-    {name: 'Tết Nguyên đán', month: 1, day: 1, lunar: true}, {name: 'Rằm tháng Giêng', month: 1, day: 15, lunar: true},
-    {name: 'Giỗ Tổ Hùng Vương', month: 3, day: 10, lunar: true}, {name: 'Tết Đoan ngọ', month: 5, day: 5, lunar: true},
-    {name: 'Vu Lan', month: 7, day: 15, lunar: true}, {name: 'Trung thu', month: 8, day: 15, lunar: true},
-    {name: 'Ông Công Ông Táo', month: 12, day: 23, lunar: true}
+    {name: 'Ano Novo', month: 1, day: 1, withYear: true},
+    {name: 'Carnaval', month: 2, day: 17},
+    {name: 'Dia da Mulher', month: 3, day: 8},
+    {name: 'Páscoa', month: 4, day: 5},
+    {name: 'Tiradentes', month: 4, day: 21},
+    {name: 'Dia do Trabalho', month: 5, day: 1},
+    {name: 'Dia das Mães', month: 5, day: 10},
+    {name: 'Dia dos Namorados', month: 6, day: 12},
+    {name: 'Dia dos Pais', month: 8, day: 9},
+    {name: 'Independência do Brasil', month: 9, day: 7},
+    {name: 'N. Sra. Aparecida', month: 10, day: 12},
+    {name: 'Finados', month: 11, day: 2},
+    {name: 'Proclamação da República', month: 11, day: 15},
+    {name: 'Consciência Negra', month: 11, day: 20},
+    {name: 'Natal', month: 12, day: 25}
   ];
   function dayIndex(day, month, year) { return jdFromDate(day, month, year); }
   function validEvent(event) {
@@ -120,19 +125,18 @@
     return found.slice(0, count || 3);
   }
   function countdownText(event) {
-    if (event.days === 0) return 'Hôm nay: ' + event.name;
-    if (event.days === 1) return event.name + ' vào ngày mai';
-    return event.name + ' còn ' + event.days + ' ngày';
+    if (event.days === 0) return 'Hoje: ' + event.name;
+    if (event.days === 1) return event.name + ' amanhã';
+    return event.name + ' em ' + event.days + ' dias';
   }
   // Countdown phrases for the nearest events; the page shows as many as fit on one line (2-3).
   function countdowns(date, extra, count) { return upcoming(date, extra, count || 3).map(countdownText); }
   function greeting(date, name) {
     var hour = date.getHours(), text, period;
-    if (hour >= 4 && hour < 11) { text = 'Chào buổi sáng'; period = 'morning'; }
-    else if (hour >= 11 && hour < 13) { text = 'Chào buổi trưa'; period = 'noon'; }
-    else if (hour >= 13 && hour < 18) { text = 'Chào buổi chiều'; period = 'afternoon'; }
-    else if (hour >= 18 && hour < 22) { text = 'Chào buổi tối'; period = 'evening'; }
-    else { text = 'Chúc ngủ ngon'; period = 'night'; }
+    if (hour >= 5 && hour < 12) { text = 'Bom dia'; period = 'morning'; }
+    else if (hour >= 12 && hour < 18) { text = 'Boa tarde'; period = 'afternoon'; }
+    else if (hour >= 18 && hour < 23) { text = 'Boa noite'; period = 'evening'; }
+    else { text = 'Boa noite'; period = 'night'; }
     var who = typeof name === 'string' ? name.trim().slice(0, 40) : '';
     return {text: who ? text + ', ' + who : text, period: period};
   }

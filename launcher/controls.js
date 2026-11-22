@@ -4,10 +4,10 @@
   else root.CytControls = factory();
 }(this, function () {
   'use strict';
-  var FAILED = 'Không đọc được', PREVIEW = 'Bản xem trước';
-  var NOTE = 'Không thu thập dữ liệu · Không kết nối mạng';
+  var FAILED = 'Não disponível', PREVIEW = 'Modo Demonstração';
+  var NOTE = 'Privacidade total · Sem coleta de dados · Sem conexão externa';
   var PLATFORM_VERSION = 'http://tizen.org/feature/platform.version';
-  var MODES = {guard: 'Giữ launcher khi Home che', observe: 'Chỉ quan sát'};
+  var MODES = {guard: 'Manter launcher ao pressionar Home', observe: 'Apenas observar'};
 
   // TV strings are shown as text only; still trim them, collapse spaces and bound the length.
   function text(value, max) {
@@ -34,21 +34,20 @@
   function count(value) { return typeof value === 'number' && value % 1 === 0 && value >= 0 && value < 1000; }
   function formatDock(apps, inputs) {
     if (!count(apps)) return '';
-    return String(apps) + (count(inputs) && inputs > 0 ? '  ·  ' + inputs + ' nguồn vào' : '');
+    return String(apps) + (count(inputs) && inputs > 0 ? '  ·  ' + inputs + ' entradas' : '');
   }
-  // [label, value] pairs for the About view. A value the TV did not give reads "Không đọc được";
-  // in the desktop preview (no window.tizen) the TV values read "Bản xem trước".
+  // [label, value] pairs for the About view.
   function aboutRows(info) {
     var data = info && typeof info === 'object' ? info : {};
     var missing = data.preview === true ? PREVIEW : FAILED, build = data.build && typeof data.build === 'object' ? data.build : {};
     return [
-      ['Phiên bản launcher', formatVersion(data.version) || missing],
-      ['Mẫu TV', text(build.model, 40) || missing],
-      ['Phần mềm', text(build.buildVersion, 40) || missing],
-      ['Hệ điều hành', formatPlatform(data.platform) || missing],
-      ['Độ phân giải', formatResolution(data.display) || missing],
-      ['Ứng dụng trên dock', formatDock(data.dockApps, data.dockInputs) || FAILED],
-      ['Dịch vụ nền', formatServiceMode(data.serviceMode) || missing]
+      ['Versão do Launcher', formatVersion(data.version) || missing],
+      ['Modelo da TV', text(build.model, 40) || missing],
+      ['Versão do Software', text(build.buildVersion, 40) || missing],
+      ['Sistema Operacional', formatPlatform(data.platform) || missing],
+      ['Resolução', formatResolution(data.display) || missing],
+      ['Apps na Barra', formatDock(data.dockApps, data.dockInputs) || FAILED],
+      ['Serviço em Segundo Plano', formatServiceMode(data.serviceMode) || missing]
     ];
   }
   // Read-only TV facts for the About view. Every call is guarded; a TV that never answers is cut off after waitMs.

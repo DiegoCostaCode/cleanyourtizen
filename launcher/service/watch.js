@@ -15,7 +15,10 @@ var ART_APP = 'org.tizen.art-app';
 // Some store entries are shortcuts to a differently named runtime process. YouTube is the one seen on
 // QA55LS03B: the launcher opens 9Ur5IzDKqV.TizenYouTube, but getAppsContext and cpu/running only show
 // Samsung's Cobalt YouTube process. Without this alias the service drops the follow immediately.
-var RUNTIME_ALIASES = {'9Ur5IzDKqV.TizenYouTube': ['com.samsung.tv.cobalt-yt']};
+var RUNTIME_ALIASES = {
+  '9Ur5IzDKqV.TizenYouTube': ['com.samsung.tv.cobalt-yt'],
+  'org.tizen.globoplayaria': ['org.tizen.globoplayapp']
+};
 
 function runtimeIds(appId) {
   return [appId].concat(RUNTIME_ALIASES[appId] || []);
@@ -80,7 +83,11 @@ function otherInFront(contexts, running, homeId, launcherId) {
     var context = contexts[index], id = context.appId;
     if (!isRunning(running, context)) continue;
     if (id === homeId) return null;
-    if (!found && id.indexOf(own) !== 0 && (/^[A-Za-z0-9]{10}\./.test(id) || /cobalt|netflix/.test(id))) found = id;
+    if (!found && id.indexOf(own) !== 0 && (
+      /^[A-Za-z0-9]{10}\./.test(id) ||
+      /cobalt|netflix|primevideo|globoplay|spotify|disney|stremio|beamctv|youtube/i.test(id) ||
+      (/org\.tizen\./.test(id) && id.indexOf('csfs') < 0 && id.indexOf('menu') < 0 && id.indexOf('art') < 0 && id.indexOf('system') < 0)
+    )) found = id;
   }
   return found;
 }
@@ -120,9 +127,22 @@ function createWatcher(options) {
     current.timer = null;
     options.front(current.id, function (front) {
       if (follow !== current) return; // stopped or replaced while the request was in flight
-      if (front && front.home) { stopFollow(); report('app-left', current.id); schedule(current.id); return; }
+      if (front && front.home) {
+        stopFollow();
+        report('app-left', current.id);
+        lastLaunch = now();
+        options.launch(options.launcherId);
+        return;
+      }
       var starting = front && front.app === 'gone' && !current.seen;
-      if ((front && front.app === 'gone' && current.seen) || ((!front || starting) && now() - current.since > followStartMs)) {
+      if (front && front.app === 'gone' && current.seen) {
+        stopFollow();
+        report('app-exited', current.id);
+        lastLaunch = now();
+        options.launch(options.launcherId);
+        return;
+      }
+      if ((!front || starting) && now() - current.since > followStartMs) {
         stopFollow(); report('follow-stopped', current.id); return;
       }
       if (front && !starting) { current.seen = true; current.since = Math.max(current.since, now()); } // known state: keep following
